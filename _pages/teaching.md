@@ -11,9 +11,9 @@ nav_order: 6
 # PhD
 
 
-My research group investigates topics across digital heritage/humanities, cultural analytics, and informatics, with a focus on developing computational tools and methods for studying the **significance** of our heritage.
+My research group investigates topics across digital heritage/humanities, cultural analytics, and informatics, with a focus on developing computational tools and methods for documenting and investigating the **significance** of our heritage.
 
-I welcome students who are interested in working on **cultural transmission**, **patrimonialization**, **heritage documentation** (both tangible and intangible), **museum informatics**, and **collections as data**, using methods/techniques from data science, network science, computer vision, or knowledge graph (or a mix of the above).
+I welcome students who are interested in working on **cultural transmission**, **patrimonialization**, **heritage documentation** (both tangible and intangible), **museum informatics**, and **collections as data**, using methods/techniques from data science, network science, computer vision, knowledge graph, or AI (LLMs and GraphRAG).
 
 If you have a strong programming background that's great, but it is not an hard requirement. I also value students with strong humanistic training, particularly in fields like art history, cultural studies, or heritage science. Above all, I value curiosity and interdisciplinarity. 
 
