@@ -73,6 +73,11 @@ ninja.data = [{
           description: "The Swiss Art Research Infrastructure develop models and tools to document and make available information about the Swiss Art and Architectural heritage",
           section: "Projects",handler: () => {
               window.location.href = "/projects/6_project/";
+            },},{id: "projects-acdic",
+          title: 'ACDIC',
+          description: "Analysis of Concordances and Discordances of Iconographic Canons using Ripa&#39;s Iconologia.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/7_project/";
             },},{
         id: 'social-work',
         title: 'Work',
