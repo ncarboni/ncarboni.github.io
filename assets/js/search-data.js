@@ -47,12 +47,12 @@ ninja.data = [{
           title: 'TextEnt',
           description: "The TEXTual ENTities in time project aim to develop a pipeline to process at scale the geographical and diachronic dimensions of literature, using the spatiotemporal features of literary works to analyze cultural trends.",
           section: "Projects",handler: () => {
-              window.location.href = "/projects/1_project/";
+              window.location.href = "/textent/";
             },},{id: "projects-artistic-trajectories",
           title: 'Artistic Trajectories',
           description: "The project study the development and dynamics of the different artistic american communities in Paris by tracing individual artistic trajectories.",
           section: "Projects",handler: () => {
-              window.location.href = "/projects/2_project/";
+              window.location.href = "/trajectories/";
             },},{id: "projects-visual-contagions",
           title: 'Visual Contagions',
           description: "The project combine computer vision, data and network science to investigate the global circulation of images in the printed press from 1890 to 1990",
@@ -77,7 +77,7 @@ ninja.data = [{
           title: 'ACDIC',
           description: "Analysis of Concordances and Discordances of Iconographic Canons using Ripa&#39;s Iconologia.",
           section: "Projects",handler: () => {
-              window.location.href = "/projects/7_project/";
+              window.location.href = "/acdic/";
             },},{
         id: 'social-work',
         title: 'Work',
