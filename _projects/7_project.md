@@ -1,6 +1,7 @@
 ---
 layout: page
 title: ACDIC
+permalink: /acdic/
 description: Analysis of Concordances and Discordances of Iconographic Canons using Ripa's Iconologia.
 img: 
 importance: 1

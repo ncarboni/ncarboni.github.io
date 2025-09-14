@@ -1,5 +1,6 @@
 ---
 layout: page
+permalink: /textent/
 title: TextEnt
 description: The TEXTual ENTities in time project aim to develop a pipeline to process at scale the geographical and diachronic dimensions of literature, using the spatiotemporal features of literary works to analyze cultural trends.
 img: 

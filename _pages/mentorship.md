@@ -13,7 +13,7 @@ nav_order: 6
 
 My research group investigates topics across digital heritage/humanities, cultural analytics, and informatics, with a focus on developing computational tools and methods for documenting and investigating the **significance** of our heritage.
 
-I welcome students who are interested in working on **cultural transmission**, **patrimonialization**, **heritage documentation** (both tangible and intangible), **museum informatics**, and **collections as data**, using methods/techniques from data science, network science, computer vision, knowledge graph, or AI (LLMs and GraphRAG).
+I welcome students who are interested in working on **cultural transmission**, **patrimonialization**, **heritage documentation** (both tangible and intangible), **museum informatics**, and **collections as data**, using methods/techniques from data science, network science, computer vision, knowledge graph, or AI (LLMs and GraphRAG). For a list of project I am currently working at, see [this link](/projects-list-students/).
 
 If you have a strong programming background that's great, but it is not an hard requirement. I also value students with strong humanistic training, particularly in fields like art history, cultural studies, or heritage science. Above all, I value curiosity and interdisciplinarity. 
 
@@ -26,6 +26,6 @@ For those interested in working with me, the best way is to [apply to the PhD pr
 
 **RAships**: Occasionally I may have paid research opportunities for students (both graduate and undergraduate). When I do, I circulate them to relevant departments/school on campus, on LinkedIn and here. 
 
-**Independent Studies**: I also supervise independent studies. Write me a brief email outlining the topic and your research interest.
+**Independent Studies**: I also supervise independent studies. Write me a brief email outlining the topic and your research interest. For a list of possible topics see [this link](/projects-list-students/).
 
 **PostDoc**: The iSchool offers a few Postdoctoral Research Associate position each year, with details and deadlines typically announced in February. If you're interested in applying and would like to discuss potential mentorship, feel free to write me.
