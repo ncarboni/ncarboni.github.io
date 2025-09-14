@@ -1,7 +1,7 @@
 ---
 layout: page
-permalink: /projects-list/
-title: Project List
+permalink: /projects-list-students/
+title: Student Project List
 description: 
 nav: false
 ---
