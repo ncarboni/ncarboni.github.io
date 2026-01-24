@@ -1,3 +1,30 @@
+@INPROCEEDINGS{11279315,
+  author={Romanello, Matteo and Gabay, Simon and Carboni, Nicola},
+  booktitle={2025 IEEE International Conference on Cyber Humanities (IEEE-CH)}, 
+  title={Predicting the Fictional Time and Space of French Theatre Plays by Using Large Language Models}, 
+  year={2025},
+  abstract = {Research in literary geography has traditionally focused on cartography overlooking the diachronic dimension of literary spaces. To analyse both the temporal and spatial dimensions of a text, we collect 600 pre-editions automatically produced from digital facsimiles, and use Large Language Models (LLMs) to extract their spatiotemporal features. To determine their accuracy and adequacy, we evaluate and compare a representative sample of LLMs using three types of prompts: meta-data, excerpts from the text, and a combination of information extracted from the text. Thanks to an ad hoc evaluation grid established for this experiment, the results are compared to a manually annotated corpus in order to evaluate the performance of various LLMs and the impact of different types of information provided. CLAUDE 3.7 SONNET appears to be the best model for this task, followed closely by the open-weight DEEPSEEK R1 (671B). Among smaller models, MISTRAL SMALL constitutes a valid cost-efficient alternative to more expensive LLMs.},
+  volume={},
+  number={},
+  pages={1-7},
+  bibtex_show = {true},
+  pdf = {ROMANELLO_2025_predicting_the_fictional_time_and_space_of_french_theatre_plays_by_using_large.pdf},
+  doi={10.1109/IEEE-CH65308.2025.11279315}}
+
+@INPROCEEDINGS{11279293,
+  author={Gabay, Simon and Kuenzli, Pierre and Rubino, Raphael and Skura, Genis and Biasi, Loris De and Falcone, Jean-Luc and Charpilloz, Christophe and Romanello, Matteo and Clérice, Thibault and Janès, Juliette and Ing, Lucence and Carboni, Nicola},
+  booktitle={2025 IEEE International Conference on Cyber Humanities (IEEE-CH)}, 
+  title={Computational challenges for the massive production of enriched pre-editions}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-6},
+    preview = {GABAY_2025_computational_challenges_for_the_massive_production_of_enriched_pre-editions.jpg},
+  pdf = {GABAY_2025_computational_challenges_for_the_massive_production_of_enriched_pre-editions.pdf},
+  abstract = {Computational methods in the humanities require large amounts of rich data that exist only in an analogue format (manuscripts, printed books, etc.). However, converting at scale these analogue documents into rich machine-mineable data poses significant problems in terms of computing capacity – an additional second per page resulting potentially in days of processing and a significantly larger footprint. Therefore, we propose a streamlined pipeline limited to the following tasks: (i) layout analysis, (ii) character optical recognition, (iv) pre-editorialization, (v) linguistic normalization, and (vi) named entity recognition. We assess the impact of each task (including preand post-processing), testing different strategies to maximise both the speed of execution and the quality of result, relying only on open solutions. This pipeline is used to transform automatically a massive corpus of French theatrical plays (<1,300,000 pages) into enriched pre-editions (< 10,000 books).},
+  doi={10.1109/IEEE-CH65308.2025.11279293}}
+
+
 @article{brusekerSemanticReferenceData2025,
   title = {The {{Semantic Reference Data Modelling Method}}: {{Creating Understandable}}, {{Reusable}} and {{Sustainable Semantic Data Models}}},
   shorttitle = {The {{Semantic Reference Data Modelling Method}}},
@@ -10,37 +37,14 @@
   doi = {10.5334/johd.282},
   abstract = {As ontologies grow in complexity and breadth, domain experts often struggle to understand their intricacies without the assistance of semantic experts. As a result, the ontologies themselves can become significant obstacles in constructing reusable and consistent knowledge graphs of their data following these standards. To address these challenges, this contribution presents the Semantic Reference Data Model (SRDM) modelling method, a protocol that offers a practical approach to (i) simplifying ontological complexity, (ii) standardising semantic patterns and (iii) facilitating the creation of new knowledge graphs. SRDM provides a solution for overcoming conceptual challenges by offering a catalogue of entity-based templates, whereby recognisable entities within a domain are documented in single templates composed of ready-made and distinct ontological patterns covering the entity\&rsquo;s most documented attributes. The limited number of elements available, the use of domain-specific language, and the correspondence between documented objects and real-world items make the SRDMs particularly easy to grasp, helping bridge the gap between semantic and domain experts. A case study is used to illustrate the framework\&rsquo;s application in the cultural sector, specifically highlighting the advantages obtained in documentation, data consistency, and external data ingestion. The case study demonstrates how SRDMs can vastly simplify the creation and management of knowledge graphs, helping Digital Humanities and Cultural Heritage communities easily share essential and useful datasets.},
   langid = {english},
+  selected={true},
   bibtex_show = {true},
   preview = {BRUSEKER_2025_the_semantic_reference_data_modelling_method_creating_understandable,_reusable.jpg},
   pdf = {BRUSEKER_2025_the_semantic_reference_data_modelling_method_creating_understandable,_reusable.pdf},
 }
 
 
-@incollection{brusekerCulturalHeritageData2017,
-  title = {Cultural {{Heritage Data Management}}: {{The Role}} of {{Formal Ontology}} and {{CIDOC CRM}}},
-  booktitle = {Heritage and {{Archaeology}} in the {{Digital Age}}},
-  author = {Bruseker, George and Carboni, Nicola and Guillem, Anais},
-  year = {2017},
-  series = {Quantitative {{Methods}} in the {{Humanities}} and {{Social Sciences}}},
-  pages = {93--131},
-  publisher = {Springer},
-  address = {Cham},
-  doi = {10.1007/978-3-319-65370-9_6},
-  abstract = {Building models for integrating the diverse data generated in Cultural Heritage disciplines is a long-term challenge both for securing presently generated knowledge and for making it progressively more widely accessible and interoperable into the future. This chapter reviews the multiple approaches undertaken to address this problem, finally proposing CIDOC CRM as the most robust solution for information integration in CH. The chapter begins by outlining the data challenge specific to the field and the main approaches that can be taken in facing it. Within this frame, it distinguishes knowledge engineering and formal ontology from other information modelling techniques as the necessary approach for tackling the broader data integration problem. It then outlines the basic principles of CIDOC CRM, the ISO standard formal ontology for CH. From there, an overview is given of some of the work that has been done both theoretically and in practice over the past five years in developing and implementing CRM as a practical data integration strategy in CH, particularly looking at model extensions to handle knowledge provenance across various disciplines and typical documentation and reasoning activities, as well as at successful implementation projects. Lastly, it summarizes the present potentials and challenges for using CIDOC CRM for solving the CH data management and integration puzzle. The intended audience of this chapter are specialists from all backgrounds within the broader domain of CH with an interest in data integration and CIDOC CRM.},
-  isbn = {978-3-319-65369-3},
-  langid = {english},
-  preview = {BRUSEKER_2017_Cultural_Heritage_Data_Management-_The_Role_of_Formal_Ontology_and_CIDOC_CRM.jpg},
-  pdf = {BRUSEKER_2017_Cultural_Heritage_Data_Management-_The_Role_of_Formal_Ontology_and_CIDOC_CRM.pdf},
-}
 
-@inproceedings{carboniComputationalAnalysisTransmission2023,
-  title = {A Computational Analysis of the Transmission and Impact of Images in the Periodical Press},
-  booktitle = {College of {{Art Association Conference}}},
-  author = {Carboni, Nicola and {Joyeux-Prunel}, Beatrice and Barras, Marie},
-  year = {2023},
-  bibtex_show = {true},
-  volume = {111th CAA Annual Conference}
-}
 
 @article{carboniConceptualFoundationDocumenting2016,
   title = {Towards a Conceptual Foundation for Documenting Tangible and Intangible Elements of a Cultural Object},
@@ -83,6 +87,7 @@
   abstract = {Les corpus de catalogues raisonnés, d'expositions, de collections et de répertoires de musées sont de plus en plus nombreux au format numérique. Ils fournissent des sources exceptionnelles pour examiner la circulation artistique à l'échelle mondiale, de l'atelier à la collection en passant par l'exposition. Cependant l'analyse computationnelle de ces circulations souffre de l'absence de conceptualisation partagée et d'une dispersion des informations. Nous proposons ici une solution pour intégrer ces informations dispersées à l'aide du web sémantique (Linked Open Data), utilisant l'ontologie CIDOC-CRM pour représenter des données historiques et spatio-temporelle relatives aux expositions, corpus le plus nombreux pour l'étude des circulations artistiques.},
   html = {https://hal.science/hal-04110759},
   bibtex_show = {true},
+    preview = {CARBONI_2023_Integrer_des_donnees_historiques_spatio-temporelles.jpg},
   pdf = {CARBONI_2023_Integrer_des_donnees_historiques_spatio-temporelles.pdf},
 }
 
@@ -122,6 +127,7 @@
   volume = {Vol-3809},
   publisher = {CEUR-WS},
   address = {Tours},
+  selected={true},
   abstract = {The paper tackles the challenges of modeling the temporal validity of artist-recorded locations documented in exhibition catalogs by proposing three different ontological patterns for recording spatiotemporal-constrained assertions in a Knowledge Graph. Exhibition catalogs often document the address used by an artist participating in exhibitions. The analysis of this information offers significant insights into the spatial and social dimensions of artistic communities. However, the time-bound nature of the information makes its modeling particularly challenging, as it requires a framework that can effectively represent both the spatial and temporal dimensions of the relation. The connection between artist and their address, in fact, is always a fluent, a relationships that only hold within specific time intervals. To overcome this challenge, the study proposes and compares three ontological patterns designed for formalizing the dynamic aspects of spatial, temporal, and conceptual characteristics of an entity. The three approaches, based on RDF-star, CIDOC-CRM, and 4D ontology, are evaluated based on their ability to accurately represent the diachronic nature of addresses, formalizing (whether implicitly or explicitly) the validity of spatiotemporal assertions, and facilitating data integration and analysis.},
   langid = {english},
   bibtex_show = {true},
@@ -136,6 +142,7 @@
   author = {Carboni, Nicola},
   editor = {Sfakakis, Michalis and Garoufallou, Emmanouel and Damigos, Matthew and Salaba, Athena and Papatheodorou, Christos},
   year = {2025},
+  selected={true},
   pages = {256--267},
   publisher = {Springer Nature Switzerland},
   address = {Cham},
@@ -156,6 +163,7 @@
   bibtex_show = {true},
   abstract = {De la fin du XIXe s. à la généralisation des images sur internet, la presse illustrée a été une force motrice déterminante pour la circulation des images. Elle a touché des publics élargis, diffusant par l’image des idées, des pratiques, des représentations. Mais s’il semble aisé d’étudier la rencontre et le métissage de quelques images, comment comprendre les circulations visuelles à grande échelle? Comment étudier la mondialisation par l’image sans se contenter d’études de cas ? Tel est le défi du projet Visual Contagions, mené par la chaire d’humanités numériques de l’université de Genève avec le soutien du Fonds national suisse.},
   html = {https://hal.science/hal-04094170/},
+    preview = {carboni_2023_pister_des_circulations_visuelles_à_l_échelle_mondiale.jpg},
   pdf = {carboni_2023_pister_des_circulations_visuelles_à_l_échelle_mondiale.pdf}
 }
 
@@ -260,6 +268,23 @@ bibtex_show = {true},
   pdf = {joyeux-prunel_2024_plotting_the_geopolitics_of_twentieth-century_modern_and_avant-garde_illustrate.pdf},
 }
 
+@incollection{brusekerCulturalHeritageData2017,
+  title = {Cultural {{Heritage Data Management}}: {{The Role}} of {{Formal Ontology}} and {{CIDOC CRM}}},
+  booktitle = {Heritage and {{Archaeology}} in the {{Digital Age}}},
+  author = {Bruseker, George and Carboni, Nicola and Guillem, Anais},
+  year = {2017},
+  series = {Quantitative {{Methods}} in the {{Humanities}} and {{Social Sciences}}},
+  pages = {93--131},
+  publisher = {Springer},
+  address = {Cham},
+  doi = {10.1007/978-3-319-65370-9_6},
+  abstract = {Building models for integrating the diverse data generated in Cultural Heritage disciplines is a long-term challenge both for securing presently generated knowledge and for making it progressively more widely accessible and interoperable into the future. This chapter reviews the multiple approaches undertaken to address this problem, finally proposing CIDOC CRM as the most robust solution for information integration in CH. The chapter begins by outlining the data challenge specific to the field and the main approaches that can be taken in facing it. Within this frame, it distinguishes knowledge engineering and formal ontology from other information modelling techniques as the necessary approach for tackling the broader data integration problem. It then outlines the basic principles of CIDOC CRM, the ISO standard formal ontology for CH. From there, an overview is given of some of the work that has been done both theoretically and in practice over the past five years in developing and implementing CRM as a practical data integration strategy in CH, particularly looking at model extensions to handle knowledge provenance across various disciplines and typical documentation and reasoning activities, as well as at successful implementation projects. Lastly, it summarizes the present potentials and challenges for using CIDOC CRM for solving the CH data management and integration puzzle. The intended audience of this chapter are specialists from all backgrounds within the broader domain of CH with an interest in data integration and CIDOC CRM.},
+  isbn = {978-3-319-65369-3},
+  langid = {english},
+  selected={true},
+  preview = {BRUSEKER_2017_Cultural_Heritage_Data_Management-_The_Role_of_Formal_Ontology_and_CIDOC_CRM.jpg},
+  pdf = {BRUSEKER_2017_Cultural_Heritage_Data_Management-_The_Role_of_Formal_Ontology_and_CIDOC_CRM.pdf},
+}
 
 @article{mirabaudVersFormalisationDun2021,
   title = {Vers La Formalisation d'un Mod{\`e}le Ontologique Pour La Description Des {\'E}glises Rupestres Peintes d'{{{\'E}thiopie}}},
