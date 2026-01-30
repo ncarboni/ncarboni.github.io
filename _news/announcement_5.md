@@ -5,5 +5,4 @@ inline: true
 related_posts: false
 ---
 
-I will be presenting,  the paper **"Querying Art Historical Knowledge Graphs: a Natural Lan-
-guage Interface for Exploring CIDOC-CRM Data Using LLM"** at the conference '[Digital Publishing for Art History](https://www.biblhertz.it/3709143/dp4ah.html)' at the Bibliotheca Hertziana – Max Planck Institute for Art History, Rome, Italy. 
+I will be presenting,  the paper **"Querying Art Historical Knowledge Graphs: a Natural Language Interface for Exploring CIDOC-CRM Data Using LLM"** at the conference '[Digital Publishing for Art History](https://www.biblhertz.it/3709143/dp4ah.html)' at the Bibliotheca Hertziana – Max Planck Institute for Art History, Rome, Italy. 
