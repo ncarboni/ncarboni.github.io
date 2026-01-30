@@ -49,7 +49,7 @@ ninja.data = [{
           section: "News",},{id: "news-i-will-be-presenting-the-paper-ai-and-knowledge-graphs-from-datafication-to-accessibility-at-the-seminar-cultural-heritage-and-ai-at-leiden-university-leiden-netherlands",
           title: 'I will be presenting, the paper “AI and Knowledge Graphs: From Datafication to...',
           description: "",
-          section: "News",},{id: "news-i-will-be-presenting-the-paper-querying-art-historical-knowledge-graphs-a-natural-lan-guage-interface-for-exploring-cidoc-crm-data-using-llm-at-the-conference-digital-publishing-for-art-history-at-the-bibliotheca-hertziana-max-planck-institute-for-art-history-rome-italy",
+          section: "News",},{id: "news-i-will-be-presenting-the-paper-querying-art-historical-knowledge-graphs-a-natural-language-interface-for-exploring-cidoc-crm-data-using-llm-at-the-conference-digital-publishing-for-art-history-at-the-bibliotheca-hertziana-max-planck-institute-for-art-history-rome-italy",
           title: 'I will be presenting, the paper “Querying Art Historical Knowledge Graphs: a Natural...',
           description: "",
           section: "News",},{id: "projects-textent",
