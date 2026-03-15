@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Great Plains &amp; Badlands — Road Trip 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --sand:#f5f0e8; --rust:#c4622d; --rust-light:#e8845a; --rust-dark:#8a3d18;
+  --sky:#4a7fa5; --sky-light:#d4e8f5; --forest:#3d6b4a; --stone:#7a7065;
+  --dark:#1a1510; --parchment:#faf7f2;
+  --amber:#c47a1a; --amber-bg:#fef8ee; --amber-border:#f0d9a8;
+}
+html,body{height:100%;}
+body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--dark);display:flex;flex-direction:column;min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--dark);color:var(--sand);padding:1.2rem 1.8rem 1rem;position:relative;overflow:hidden;flex-shrink:0;}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(196,98,45,0.05) 40px,rgba(196,98,45,0.05) 41px);}
+.header-inner{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;}
+.trip-title{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;color:var(--sand);}
+.trip-sub{font-size:0.72rem;color:var(--stone);margin-top:2px;letter-spacing:0.07em;text-transform:uppercase;}
+.legend{font-size:0.68rem;color:var(--stone);line-height:2;text-align:right;}
+.legend span{margin-left:0.6rem;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:255px 1fr;flex:1;overflow:hidden;height:calc(100vh - 96px);}
+.sidebar{background:var(--dark);overflow-y:auto;border-right:1px solid rgba(196,98,45,0.2);padding:0.5rem 0;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--rust-dark);border-radius:2px;}
+.sec-hdr{font-size:0.59rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--stone);padding:0.6rem 1rem 0.2rem;}
+.day-item{display:flex;align-items:center;gap:0.6rem;padding:0.48rem 1rem;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;}
+.day-item:hover{background:rgba(255,255,255,0.04);}
+.day-item.active{background:rgba(196,98,45,0.12);border-left-color:var(--rust);}
+.day-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dot-drive{background:var(--rust);} .dot-park{background:var(--forest);} .dot-explore{background:var(--sky);}
+.day-info{flex:1;min-width:0;}
+.day-date{font-size:0.63rem;color:var(--stone);}
+.day-name{font-size:0.78rem;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.day-tag{font-size:0.56rem;text-transform:uppercase;letter-spacing:0.05em;padding:1px 5px;border-radius:3px;flex-shrink:0;font-weight:500;}
+.tag-drive{background:rgba(196,98,45,0.2);color:var(--rust-light);}
+.tag-park{background:rgba(61,107,74,0.3);color:#7bc48a;}
+.tag-explore{background:rgba(74,127,165,0.3);color:#7ab8d9;}
+
+/* MAIN */
+.main{overflow-y:auto;background:var(--parchment);}
+.main::-webkit-scrollbar{width:3px;}
+.main::-webkit-scrollbar-thumb{background:var(--rust);border-radius:2px;}
+.day-content{display:none;padding:1.2rem 1.7rem 3rem;max-width:800px;}
+.day-content.visible{display:block;}
+.day-number{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--stone);margin-bottom:2px;}
+.day-heading{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:700;color:var(--dark);line-height:1.2;margin-bottom:0.75rem;}
+.summary-bar{display:flex;gap:1.1rem;padding:0.55rem 0;border-bottom:1px solid rgba(0,0,0,0.08);margin-bottom:0.85rem;flex-wrap:wrap;}
+.sum-item{display:flex;flex-direction:column;gap:1px;}
+.sum-label{font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--stone);}
+.sum-val{font-size:0.84rem;font-weight:500;color:var(--dark);}
+.day-math{background:var(--dark);color:var(--sand);padding:0.5rem 0.85rem;border-radius:5px;font-size:0.72rem;font-family:monospace;line-height:1.5;margin-bottom:0.85rem;border-left:3px solid var(--rust);}
+.map-wrap{width:100%;height:220px;border-radius:8px;overflow:hidden;margin-bottom:1.1rem;border:1px solid rgba(0,0,0,0.1);}
+
+/* SCENIC BANNER */
+.scenic-banner{background:linear-gradient(135deg,#1a2a1a 0%,#2a3d2a 100%);border-radius:7px;padding:0.7rem 1rem;margin-bottom:1rem;border-left:3px solid var(--forest);}
+.scenic-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#7bc48a;font-weight:500;margin-bottom:0.25rem;display:flex;align-items:center;gap:0.3rem;}
+.scenic-label::before{content:'🛣';}
+.scenic-text{font-size:0.78rem;color:#c8dfc8;line-height:1.6;}
+.scenic-text a{color:#7bc48a;text-decoration:none;}
+.scenic-text a:hover{text-decoration:underline;}
+
+/* STOPS */
+.stops-list{display:flex;flex-direction:column;}
+.stop-item{display:grid;grid-template-columns:46px 1fr;position:relative;}
+.stop-item:not(:last-child) .time-col::after{content:'';position:absolute;left:22px;top:26px;bottom:0;width:1px;background:rgba(196,98,45,0.2);}
+.time-col{position:relative;padding-top:3px;display:flex;flex-direction:column;align-items:center;}
+.time-dot{width:8px;height:8px;border-radius:50%;border:2px solid var(--parchment);flex-shrink:0;z-index:1;margin-top:3px;}
+.dot-main{background:var(--rust);}
+.dot-early{background:#6b2a10;}
+.dot-opt{background:var(--stone);}
+.dot-photo{background:var(--sky);}
+.dot-food{background:var(--amber);}
+.time-label{font-size:0.62rem;color:var(--stone);font-weight:500;margin-top:3px;white-space:nowrap;}
+.content-col{padding:0 0 0.9rem 0.7rem;}
+.stop-title{font-size:0.88rem;font-weight:500;color:var(--dark);line-height:1.3;margin-bottom:2px;display:flex;align-items:baseline;gap:0.35rem;flex-wrap:wrap;}
+.stop-title a{color:inherit;text-decoration:none;border-bottom:1px dashed rgba(26,21,16,0.22);transition:color 0.15s;}
+.stop-title a:hover{color:var(--sky);}
+.stop-note{font-size:0.77rem;color:var(--stone);line-height:1.6;margin-bottom:2px;}
+.stop-note a{color:var(--sky);text-decoration:none;}
+.stop-note a:hover{text-decoration:underline;}
+.stop-tip{font-size:0.74rem;color:var(--rust-dark);font-style:italic;line-height:1.5;padding-left:0.6rem;border-left:2px solid var(--rust-light);margin-top:3px;}
+
+/* OPTIONAL */
+.opt-block{background:#fdf8f0;border:1px solid #e8d5b0;border-radius:6px;padding:0.55rem 0.8rem;margin-bottom:0.8rem;}
+.opt-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:#8a6030;font-weight:500;margin-bottom:0.3rem;display:flex;align-items:center;gap:0.25rem;}
+.opt-label::before{content:'◇';}
+
+/* RESTAURANT */
+.food-block{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:6px;padding:0.55rem 0.8rem;margin-bottom:0.8rem;}
+.food-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--amber);font-weight:500;margin-bottom:0.3rem;display:flex;align-items:center;gap:0.25rem;}
+.food-label::before{content:'🍽';}
+.food-title{font-size:0.84rem;font-weight:500;color:var(--dark);margin-bottom:2px;}
+.food-title a{color:var(--amber);text-decoration:none;border-bottom:1px dashed rgba(196,122,26,0.4);}
+.food-title a:hover{color:var(--rust);}
+.food-desc{font-size:0.76rem;color:var(--stone);line-height:1.6;}
+.food-desc a{color:var(--sky);text-decoration:none;}
+
+/* PHOTO/AMERICANA */
+.photo-block{background:#f0f5fa;border:1px solid #b8d0e8;border-radius:6px;padding:0.55rem 0.8rem;margin-bottom:0.8rem;}
+.photo-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--sky);font-weight:500;margin-bottom:0.3rem;}
+
+/* EXPANDABLE */
+.options-toggle{background:none;border:1px solid rgba(196,98,45,0.3);border-radius:4px;color:var(--rust);font-size:0.7rem;font-family:'DM Sans',sans-serif;padding:2px 9px;cursor:pointer;margin-top:3px;transition:all 0.15s;display:inline-flex;align-items:center;gap:0.3rem;}
+.options-toggle:hover{background:rgba(196,98,45,0.08);}
+.options-panel{display:none;margin-top:6px;border-left:2px solid rgba(196,98,45,0.2);padding-left:0.65rem;}
+.options-panel.open{display:block;}
+.option-item{margin-bottom:0.45rem;}
+.option-item:last-child{margin-bottom:0;}
+.option-name{font-size:0.78rem;font-weight:500;color:var(--dark);}
+.option-name a{color:var(--sky);text-decoration:none;}
+.option-name a:hover{text-decoration:underline;}
+.option-desc{font-size:0.74rem;color:var(--stone);line-height:1.5;}
+
+/* BADGES */
+.badges{display:flex;gap:0.3rem;margin-top:3px;flex-wrap:wrap;}
+.badge{font-size:0.63rem;padding:1px 6px;border-radius:10px;font-weight:500;}
+.badge-fee{background:rgba(196,98,45,0.12);color:var(--rust-dark);}
+.badge-dur{background:rgba(122,112,101,0.12);color:var(--stone);}
+.badge-early{background:rgba(61,107,74,0.12);color:var(--forest);}
+.badge-free{background:rgba(74,127,165,0.1);color:var(--sky);}
+.badge-book{background:rgba(196,98,45,0.2);color:var(--rust-dark);border:1px solid rgba(196,98,45,0.3);}
+.badge-opt{background:rgba(122,112,101,0.1);color:var(--stone);}
+
+/* NOTES */
+.notes-box{background:white;border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:0.85rem 1.1rem;margin-top:1rem;font-size:0.79rem;line-height:1.7;}
+.notes-label{font-size:0.64rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--stone);margin-bottom:0.4rem;}
+.notes-box a{color:var(--sky);}
+.alert-box{font-size:0.74rem;color:#1a4a6b;margin-top:0.7rem;padding:0.55rem 0.85rem;background:#d4e8f5;border-radius:5px;line-height:1.6;}
+.gmaps{font-size:0.68rem;color:var(--sky);text-decoration:none;opacity:0.7;margin-left:0.25rem;}
+.gmaps:hover{opacity:1;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="trip-title">Great Plains &amp; Badlands</div>
+      <div class="trip-sub">Road Trip · May 23 → June 2, 2026 · IL · IA · SD · ND · WY · ~2,600 miles · 12 days</div>
+    </div>
+    <div class="legend">
+      <span>◆ Essential</span>
+      <span>◇ Optional</span>
+      <span>🛣 Scenic route</span>
+      <span>📷 Photo/Americana</span>
+      <span>🍽 Local restaurant</span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sec-hdr">Driving Out</div>
+    <div class="day-item active" data-day="0" onclick="showDay(0)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Sat May 23</div><div class="day-name">Champaign → Des Moines</div></div><span class="day-tag tag-drive">Drive</span></div>
+    <div class="day-item" data-day="1" onclick="showDay(1)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Sun May 24</div><div class="day-name">Des Moines → Wall, SD</div></div><span class="day-tag tag-drive">Drive</span></div>
+    <div class="sec-hdr">Badlands</div>
+    <div class="day-item" data-day="2" onclick="showDay(2)"><div class="day-dot dot-park"></div><div class="day-info"><div class="day-date">Mon May 25</div><div class="day-name">Badlands Full Day</div></div><span class="day-tag tag-park">Park</span></div>
+    <div class="day-item" data-day="3" onclick="showDay(3)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Tue May 26</div><div class="day-name">Wall → Medora, ND</div></div><span class="day-tag tag-drive">Drive</span></div>
+    <div class="sec-hdr">Theodore Roosevelt NP</div>
+    <div class="day-item" data-day="4" onclick="showDay(4)"><div class="day-dot dot-park"></div><div class="day-info"><div class="day-date">Wed May 27</div><div class="day-name">Theodore Roosevelt NP</div></div><span class="day-tag tag-park">Park</span></div>
+    <div class="sec-hdr">Back South</div>
+    <div class="day-item" data-day="5" onclick="showDay(5)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Thu May 28</div><div class="day-name">Medora → Hill City, SD</div></div><span class="day-tag tag-drive">Drive</span></div>
+    <div class="sec-hdr">Black Hills</div>
+    <div class="day-item" data-day="6" onclick="showDay(6)"><div class="day-dot dot-park"></div><div class="day-info"><div class="day-date">Fri May 29</div><div class="day-name">Custer State Park</div></div><span class="day-tag tag-park">Park</span></div>
+    <div class="day-item" data-day="7" onclick="showDay(7)"><div class="day-dot dot-explore"></div><div class="day-info"><div class="day-date">Sat May 30</div><div class="day-name">Crazy Horse + Rushmore + Deadwood</div></div><span class="day-tag tag-explore">Explore</span></div>
+    <div class="sec-hdr">Wyoming + Home</div>
+    <div class="day-item" data-day="8" onclick="showDay(8)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Sun May 31</div><div class="day-name">Devil's Tower → Sioux Falls</div></div><span class="day-tag tag-drive">Drive</span></div>
+    <div class="day-item" data-day="9" onclick="showDay(9)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Mon Jun 1</div><div class="day-name">Sioux Falls → Des Moines</div></div><span class="day-tag tag-drive">Drive</span></div>
+    <div class="day-item" data-day="10" onclick="showDay(10)"><div class="day-dot dot-drive"></div><div class="day-info"><div class="day-date">Tue Jun 2</div><div class="day-name">Des Moines → Champaign</div></div><span class="day-tag tag-drive">Drive</span></div>
+  </div>
+
+  <div class="main" id="main">
+
+<!-- ═══ DAY 0 ═══ -->
+<div class="day-content visible" id="day-0">
+  <div class="day-number">Day 1 · Saturday May 23</div>
+  <div class="day-heading">Champaign → Des Moines</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Drive</span><span class="sum-val">~6h30 real</span></div>
+    <div class="sum-item"><span class="sum-label">Depart</span><span class="sum-val">09:00</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive</span><span class="sum-val">~15:30</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Des Moines, IA</span></div>
+  </div>
+  <div class="day-math">GPS 5h07 × 1.25 = 6h25 + lunch ~1h = ~7h25. Depart 09:00 → arrive ~15:30</div>
+  <div class="map-wrap" id="map-0"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Route — I-74 W then I-80 W through Iowa</div>
+    <div class="scenic-text">Mostly flat agricultural Illinois and Iowa, but the Mississippi River crossing at Davenport/Bettendorf is genuinely impressive — wide, industrial, and photogenic. The Iowa River valley around Iowa City is the most appealing stretch. Nothing dramatic today — save your energy.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Champaign — I-74 west <a class="gmaps" href="https://maps.google.com/?q=Champaign,IL" target="_blank">↗</a></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~12:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.visitiowacity.com/" target="_blank">Iowa City, IA</a> — lunch <a class="gmaps" href="https://maps.google.com/?q=Iowa+City,IA" target="_blank">↗</a></div>
+      <div class="stop-note">University of Iowa campus strip along the Iowa River. Good independent restaurants, pleasant walkable downtown. The pedestrian mall on Dubuque Street is the heart of it.</div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Iowa City</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurant_Review-g37836-d401250-Reviews-Hamburg_Inn_No_2-Iowa_City_Iowa.html" target="_blank">Hamburg Inn No. 2</a> <a class="gmaps" href="https://maps.google.com/?q=Hamburg+Inn+Iowa+City" target="_blank">↗</a></div>
+        <div class="food-desc">An Iowa City institution since 1948. Famous diner, legendary pie, enormous portions. Every US presidential candidate has stopped here during Iowa caucus season. Order the pork tenderloin or whatever pie is on that day.</div>
+      </div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~15:30</div></div><div class="content-col">
+      <div class="stop-title">Arrive Des Moines — check in <a class="gmaps" href="https://maps.google.com/?q=Des+Moines,IA" target="_blank">↗</a></div>
+      <div class="stop-note">East Village neighborhood near downtown is walkable with good independent restaurants and bars.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-opt"></div><div class="time-label">~17:00</div></div><div class="content-col">
+      <div class="opt-block">
+        <div class="opt-label">Optional if energy allows</div>
+        <div class="stop-title"><a href="https://www.pappajohnsculpturepark.org/" target="_blank">Pappajohn Sculpture Park</a> <a class="gmaps" href="https://maps.google.com/?q=Pappajohn+Sculpture+Park+Des+Moines" target="_blank">↗</a></div>
+        <div class="stop-note">4.4 acres of major contemporary sculpture in the city center, free. Good leg stretch.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-dur">~45 min</span><span class="badge badge-opt">Optional</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-food"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Des Moines dinner</div>
+        <div class="food-title"><a href="https://harbingerdsm.com/" target="_blank">Harbinger</a> <a class="gmaps" href="https://maps.google.com/?q=Harbinger+Des+Moines" target="_blank">↗</a></div>
+        <div class="food-desc">Consistently rated Des Moines' best restaurant. Small, seasonal, chef-driven — the kind of place you'd expect in a much bigger city. Reserve ahead. Alternatively, <a href="https://www.eateryadsm.com/" target="_blank">Eatery A</a> for Mediterranean-inspired dishes, or <a href="https://www.fongspizza.com/" target="_blank">Fong's Pizza</a> for the famous crab rangoon pizza — a genuine Des Moines original.</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 1 ═══ -->
+<div class="day-content" id="day-1">
+  <div class="day-number">Day 2 · Sunday May 24</div>
+  <div class="day-heading">Des Moines → Wall, SD</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Drive</span><span class="sum-val">~10h+ real with stops</span></div>
+    <div class="sum-item"><span class="sum-label">Depart</span><span class="sum-val">09:00</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive</span><span class="sum-val">~19:30</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Wall, SD</span></div>
+  </div>
+  <div class="day-math">GPS 6h20 × 1.25 = 7h55 + Sioux Falls 1h15 + Porter 1h + Chamberlain 20min = ~10h30. Depart 09:00 → arrive ~19:30</div>
+  <div class="map-wrap" id="map-1"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Route — I-90 W across South Dakota</div>
+    <div class="scenic-text">The landscape transforms dramatically west of Sioux Falls. For the first two hours it's rolling green prairie — then around Mitchell and Chamberlain the terrain opens up into something vast and flat in a way that feels almost oceanic. The Missouri River crossing at Chamberlain is a genuine landscape event — the hills suddenly drop away and the river is wide and silver below. West of Chamberlain the sky becomes the dominant element. By the time you reach the Badlands exit the land is already half-broken and austere.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Des Moines — I-35 N then I-90 W</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-photo"></div><div class="time-label">~10:30</div></div><div class="content-col">
+      <div class="photo-block">
+        <div class="photo-label">📷 Americana — Blue Earth, MN (slight detour off I-90 via I-169 N)</div>
+        <div class="stop-title"><a href="https://en.wikipedia.org/wiki/Blue_Earth,_Minnesota" target="_blank">Jolly Green Giant statue</a> <a class="gmaps" href="https://maps.google.com/?q=Jolly+Green+Giant+Statue+Blue+Earth+MN" target="_blank">↗</a></div>
+        <div class="stop-note">A 55-foot fiberglass Green Giant on the roadside. Gloriously absurd, very Midwestern, classic road trip photo. 15 min off route — only worth it if you embrace roadside kitsch.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-dur">15 min</span><span class="badge badge-opt">Slight detour</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~12:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.siouxfalls.org/parks/falls-park" target="_blank">Sioux Falls — Falls Park</a> <a class="gmaps" href="https://maps.google.com/?q=Falls+Park+Sioux+Falls+SD" target="_blank">↗</a></div>
+      <div class="stop-note">The Big Sioux River cascades over pink quartzite right in the city. Observation tower, café at the overlook. Unlike anything else on this drive.</div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Sioux Falls lunch</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurant_Review-g54805-d409870-Reviews-Phillips_Avenue_Diner-Sioux_Falls_South_Dakota.html" target="_blank">Phillips Avenue Diner</a> <a class="gmaps" href="https://maps.google.com/?q=Phillips+Avenue+Diner+Sioux+Falls" target="_blank">↗</a></div>
+        <div class="food-desc">Classic retro diner in downtown Sioux Falls. The milkshakes are locally legendary. All-American comfort food — open for breakfast and lunch. 10 min walk from Falls Park.</div>
+      </div>
+      <div class="badges"><span class="badge badge-free">Free (park)</span><span class="badge badge-dur">~1h15</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~14:15</div></div><div class="content-col">
+      <div class="stop-title"><a href="http://portersculpturepark.com/" target="_blank">Porter Sculpture Park</a> — I-90 Exit 374, Montrose <a class="gmaps" href="https://maps.google.com/?q=Porter+Sculpture+Park+Montrose+SD" target="_blank">↗</a></div>
+      <div class="stop-note">60+ massive scrap-metal sculptures on 10 prairie acres. The 60-foot bull head weighs 25 tons — same scale as the Rushmore heads. Surreal in the middle of nowhere. Opens May 15. The artist is often there himself.</div>
+      <div class="stop-tip">One of the most memorable stops on the trip for its sheer unexpectedness. Don't skip it.</div>
+      <div class="badges"><span class="badge badge-fee">$10</span><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-photo"></div><div class="time-label">~15:45</div></div><div class="content-col">
+      <div class="photo-block">
+        <div class="photo-label">📷 Americana — Mitchell, SD</div>
+        <div class="stop-title"><a href="https://www.cornpalace.org/" target="_blank">Corn Palace</a> drive-by <a class="gmaps" href="https://maps.google.com/?q=Corn+Palace+Mitchell+SD" target="_blank">↗</a></div>
+        <div class="stop-note">A building covered entirely in murals made from corn, changed yearly. Visible from the road — pull over 15 min for photos. Interior adds 45 min if you want it.</div>
+        <div class="badges"><span class="badge badge-free">Free exterior</span><span class="badge badge-dur">15 min</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~17:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://alsoasissd.com/" target="_blank">Al's Oasis</a>, Oacoma — Missouri River crossing <a class="gmaps" href="https://maps.google.com/?q=Als+Oasis+Oacoma+SD" target="_blank">↗</a></div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — I-90 institution</div>
+        <div class="food-title"><a href="https://alsoasissd.com/" target="_blank">Al's Oasis</a></div>
+        <div class="food-desc">A South Dakota I-90 legend since 1919, right on the Missouri River at Oacoma. Famous for bison burgers and homemade pie (they serve over 50,000 slices a year). 5-cent coffee. Classic road trip stop — the food is honest and the atmosphere is genuinely local. Good place for a late afternoon snack or early dinner if timing works.</div>
+      </div>
+      <div class="stop-note">The Missouri River bluffs and the Dignity sculpture are just across the bridge in Chamberlain — pull over at the I-90 rest area overlook for 20 min. The 50-foot stainless steel Lakota woman on the bluff is striking above the wide river.</div>
+      <div class="badges"><span class="badge badge-dur">~30 min</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~19:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.walldrug.com/" target="_blank">Wall Drug</a> + check in + dinner <a class="gmaps" href="https://maps.google.com/?q=Wall+Drug+Wall+SD" target="_blank">↗</a></div>
+      <div class="stop-note">Free ice water, 5-cent coffee, jackalope photo ops. Hokey Americana at its finest. Worth 20 min.</div>
+      <div class="stop-tip">Book <a href="https://www.cedarpasslodge.com/" target="_blank">Cedar Pass Lodge</a> inside the Badlands (9 miles south) well in advance.</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 2 ═══ -->
+<div class="day-content" id="day-2">
+  <div class="day-number">Day 3 · Monday May 25</div>
+  <div class="day-heading">Badlands National Park</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">To park</span><span class="sum-val">7 miles / 10 min</span></div>
+    <div class="sum-item"><span class="sum-label">Entry</span><span class="sum-val">$35 or ATB pass</span></div>
+    <div class="sum-item"><span class="sum-label">Type</span><span class="sum-val">Full day</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Wall, SD</span></div>
+  </div>
+  <div class="map-wrap" id="map-2"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Badlands Loop Road — Hwy 240, 39 miles</div>
+    <div class="scenic-text">The Loop Road is itself the attraction — 30 named overlooks, each showing a different face of the formations. The eastern end is the most dramatic; the western Sage Creek section is the most remote and wildlife-rich. Drive it at least twice: once in the morning when formations are bright white and orange, once in the late afternoon when they turn red and purple. The light changes the park entirely.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-early"></div><div class="time-label">06:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/badl/planyourvisit/scenic-drives.htm" target="_blank">Sunrise — Pinnacles or Big Badlands Overlook</a> <a class="gmaps" href="https://maps.google.com/?q=Pinnacles+Overlook+Badlands+National+Park" target="_blank">↗</a></div>
+      <div class="stop-note">Formations glow orange and deep red at first light. You'll have the pullouts entirely to yourself.</div>
+      <div class="stop-tip">One of the two "worth waking up for" moments on this trip. Bring coffee in a thermos.</div>
+      <div class="badges"><span class="badge badge-early">Early start recommended</span><span class="badge badge-dur">~45 min</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">07:30</div></div><div class="content-col">
+      <div class="stop-title">Breakfast — Wall or <a href="https://www.cedarpasslodge.com/" target="_blank">Cedar Pass Lodge</a></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/badl/planyourvisit/notch-trail.htm" target="_blank">Notch Trail</a> <a class="gmaps" href="https://maps.google.com/?q=Notch+Trail+Badlands+National+Park" target="_blank">↗</a></div>
+      <div class="stop-note">Best hike in the park. 2.4 km — a log ladder through a slot canyon to a dramatic overlook above the White River Valley. Go before midday heat.</div>
+      <div class="badges"><span class="badge badge-dur">~2 hrs</span></div>
+      <button class="options-toggle" onclick="toggleOptions(this)">⊕ More trail options</button>
+      <div class="options-panel">
+        <div class="option-item"><div class="option-name"><a href="https://www.nps.gov/badl/planyourvisit/castle-trail.htm" target="_blank">Castle Trail</a> — for serious hikers</div><div class="option-desc">16 km through the formations. Longest trail in the park, solitary and immersive. Half-day commitment.</div></div>
+        <div class="option-item"><div class="option-name"><a href="https://www.nps.gov/badl/planyourvisit/medicine-root-loop.htm" target="_blank">Medicine Root Loop</a></div><div class="option-desc">6 km through mixed-grass prairie — better for bison and pronghorn encounters than geological views.</div></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">11:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/badl/planyourvisit/door-trail.htm" target="_blank">Door Trail</a> + <a href="https://www.nps.gov/badl/planyourvisit/window-trail.htm" target="_blank">Window Trail</a> <a class="gmaps" href="https://maps.google.com/?q=Door+Trail+Badlands+National+Park" target="_blank">↗</a></div>
+      <div class="stop-note">Same parking lot. Door Trail walks you into the formations (0.8 km, yellow posts). Window Trail frames a view through a natural rock opening (0.4 km).</div>
+      <div class="badges"><span class="badge badge-dur">~1 hr both</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">12:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/badl/planyourvisit/visitorcenters.htm" target="_blank">Ben Reifel Visitor Center</a> + lunch <a class="gmaps" href="https://maps.google.com/?q=Ben+Reifel+Visitor+Center+Badlands" target="_blank">↗</a></div>
+      <div class="stop-note">Cedar Pass Lodge restaurant next door. Geology and fossil exhibits worth an hour in the AC during peak midday heat.</div>
+      <div class="badges"><span class="badge badge-dur">~1h30</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">14:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/mimi/index.htm" target="_blank">Minuteman Missile NHS</a> — I-90 Exit 131 <a class="gmaps" href="https://maps.google.com/?q=Minuteman+Missile+National+Historic+Site" target="_blank">↗</a></div>
+      <div class="stop-note">Delta-09: look through glass at an actual Minuteman II missile in its silo. Free. Cold War exhibits and film at visitor center.</div>
+      <div class="stop-tip">Standing over a nuclear silo in the middle of the South Dakota prairie is one of the stranger travel experiences available in the US.</div>
+      <div class="badges"><span class="badge badge-free">Free (Delta-09)</span><span class="badge badge-dur">~1h30</span></div>
+      <div class="opt-block" style="margin-top:5px">
+        <div class="opt-label">Optional upgrade — book ahead</div>
+        <div class="stop-note"><strong>Delta-01 underground tour:</strong> 31 feet underground, see the actual launch console. 45 min, 6 people max — book at <a href="https://www.recreation.gov/ticket/facility/300007" target="_blank">recreation.gov</a>. Open Wed–Sun.</div>
+        <div class="badges"><span class="badge badge-fee">~$5</span><span class="badge badge-book">Advance booking</span><span class="badge badge-opt">Optional</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">16:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/badl/planyourvisit/sage-creek-wilderness-area.htm" target="_blank">Sage Creek Rim Road</a> <a class="gmaps" href="https://maps.google.com/?q=Sage+Creek+Campground+Badlands" target="_blank">↗</a></div>
+      <div class="stop-note">Gravel road, no services — fill up before turning off. Bison herds often right along the road. Almost no other visitors on this section.</div>
+      <div class="badges"><span class="badge badge-dur">~1h30</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-opt"></div><div class="time-label">~19:30</div></div><div class="content-col">
+      <div class="opt-block">
+        <div class="opt-label">Optional — if you have energy</div>
+        <div class="stop-note"><strong>Sunset at Pinnacles Overlook</strong> — completely different light than dawn. Worth doing both if you can.</div>
+        <div class="badges"><span class="badge badge-opt">Optional</span></div>
+      </div>
+      <div class="stop-title">Dinner in Wall</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 3 ═══ -->
+<div class="day-content" id="day-3">
+  <div class="day-number">Day 4 · Tuesday May 26</div>
+  <div class="day-heading">Wall → Medora, ND via Hwy 85</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Drive</span><span class="sum-val">~6h40 real</span></div>
+    <div class="sum-item"><span class="sum-label">Depart</span><span class="sum-val">09:00</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive</span><span class="sum-val">~15:40</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Medora, ND</span></div>
+  </div>
+  <div class="day-math">GPS 4h30 × 1.25 = 5h40 + Bowman lunch 1h = ~6h40. Depart 09:00 → arrive ~15:40</div>
+  <div class="map-wrap" id="map-3"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Route — Highway 85 North, the Dances with Wolves road</div>
+    <div class="scenic-text">This is the most cinematic drive of the trip. Highway 85 north of Wall cuts through open shortgrass prairie with almost no traffic — exactly the landscape you'll recognize from the film. The road is ruler-straight for long stretches, then dips through creek valleys with cottonwoods, then opens back onto grass and sky. As you cross into North Dakota the terrain becomes more rolling and the potholes (small glacial lakes) multiply. The last hour into Medora, the badlands topography reappears as the Little Missouri River valley cuts through. Fill up in Wall before leaving — stations are sparse until Bowman.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Wall north on Highway 85 <a class="gmaps" href="https://maps.google.com/?q=Wall+SD" target="_blank">↗</a></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-photo"></div><div class="time-label">~10:30</div></div><div class="content-col">
+      <div class="photo-block">
+        <div class="photo-label">📷 Landscape — anywhere on Hwy 85 ND/SD border</div>
+        <div class="stop-title">Open Plains horizon shots <a class="gmaps" href="https://maps.google.com/?q=Highway+85+North+Dakota" target="_blank">↗</a></div>
+        <div class="stop-note">Pull over anywhere on this stretch. The sky is the dominant element — it takes up 80% of the frame. Prairie pothole wetlands appear as small round lakes. The absence of anything man-made is itself the photograph.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-dur">Stop anywhere</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~11:30</div></div><div class="content-col">
+      <div class="stop-title">Bowman, ND — lunch <a class="gmaps" href="https://maps.google.com/?q=Bowman+ND" target="_blank">↗</a></div>
+      <div class="stop-note">Small honest Plains town. Diner food.</div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Bowman, ND</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurants-g45019-Bowman_North_Dakota.html" target="_blank">Trappers Bar &amp; Grill or Four Way Bar</a></div>
+        <div class="food-desc">Small-town Plains diners — honest burgers and steaks, local crowd. The Four Way Bar is the more authentically local of the two. Nothing fancy, but the real thing.</div>
+      </div>
+      <div class="opt-block" style="margin-top:5px">
+        <div class="opt-label">Optional nearby</div>
+        <div class="stop-note"><a href="https://www.bowmancountynd.com/bowman-county-pioneer-village" target="_blank">Bowman County Pioneer Village</a> — preserved homestead-era buildings, free, ~30 min.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-opt">Optional</span></div>
+      </div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~15:30</div></div><div class="content-col">
+      <div class="stop-title">Arrive <a href="https://www.medorand.com/" target="_blank">Medora</a> — check in <a class="gmaps" href="https://maps.google.com/?q=Medora+ND" target="_blank">↗</a></div>
+      <div class="stop-note">Tiny town — book ahead. <a href="https://www.medora.com/lodging/rough-riders-hotel/" target="_blank">Rough Riders Hotel</a> is the historic option.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~16:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/thro/planyourvisit/painted-canyon-visitor-center.htm" target="_blank">Painted Canyon Overlook</a> <a class="gmaps" href="https://maps.google.com/?q=Painted+Canyon+Overlook+Theodore+Roosevelt+NP" target="_blank">↗</a></div>
+      <div class="stop-note">7 miles east on I-94. First dramatic view of the ND badlands. The landscape is softer and greener than SD — more alive-feeling.</div>
+      <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-dur">~45 min</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~17:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/thro/learn/historyculture/chateau-de-mores.htm" target="_blank">Château de Morès</a> <a class="gmaps" href="https://maps.google.com/?q=Chateau+de+Mores+Medora+ND" target="_blank">↗</a></div>
+      <div class="stop-note">Roosevelt's neighbor was a French marquis who built a meatpacking empire here in the 1880s. His 26-room chateau is preserved. A strange and fascinating footnote.</div>
+      <div class="badges"><span class="badge badge-dur">~30 min</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-food"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Medora dinner</div>
+        <div class="food-title"><a href="https://www.medora.com/eat/theodores-dining-room/" target="_blank">Theodore's Dining Room</a> <a class="gmaps" href="https://maps.google.com/?q=Theodores+Dining+Room+Medora+ND" target="_blank">↗</a></div>
+        <div class="food-desc">Best restaurant in Medora. Beautifully plated bison osso bucco, bacon-wrapped steaks, and local game. Historic building, attentive service — genuinely good for a town this size. Reserve ahead for dinner. Alternatively, <a href="https://www.tripadvisor.com/Restaurant_Review-g45376-d471649-Reviews-Boots_Bar_Grill-Medora_North_Dakota.html" target="_blank">Boots Bar &amp; Grill</a> is the authentic local bar with great burgers and an elk burger that regulars swear by.</div>
+      </div>
+      <div class="opt-block" style="margin-top:5px">
+        <div class="opt-label">Optional evening</div>
+        <div class="stop-note"><a href="https://www.medora.com/entertainment/medora-musical/" target="_blank">Pitchfork Fondue and Medora Musical</a> — nightly in summer, touristy but locally beloved. Book ahead if interested.</div>
+        <div class="badges"><span class="badge badge-opt">Optional</span></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 4 ═══ -->
+<div class="day-content" id="day-4">
+  <div class="day-number">Day 5 · Wednesday May 27</div>
+  <div class="day-heading">Theodore Roosevelt National Park</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">To park</span><span class="sum-val">2 min from motel</span></div>
+    <div class="sum-item"><span class="sum-label">Entry</span><span class="sum-val">ATB pass covers it</span></div>
+    <div class="sum-item"><span class="sum-label">Type</span><span class="sum-val">Full day</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Medora, ND</span></div>
+  </div>
+  <div class="map-wrap" id="map-4"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">South Unit Scenic Loop — 36 miles</div>
+    <div class="scenic-text">The South Unit loop is the park's core drive and it's far better experienced slowly than efficiently. The road winds through dramatically eroded badlands, drops into the Little Missouri River valley, climbs back onto ridge overlooks, and passes through open prairie where bison roam completely freely. Unlike Badlands NP, the landscape here is inhabited by animals at every turn. Wind Canyon is the single most dramatic viewpoint — a short walk to a cliff edge above the river. Buck Hill is the panoramic apex. Drive at 10–15 mph and stop constantly.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-early"></div><div class="time-label">06:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/thro/planyourvisit/things-to-do.htm" target="_blank">Dawn wildlife drive — South Unit</a> <a class="gmaps" href="https://maps.google.com/?q=Theodore+Roosevelt+National+Park+South+Unit" target="_blank">↗</a></div>
+      <div class="stop-note">Bison and wild horses most active at first light, often blocking the road completely. Drive slowly from the first mile.</div>
+      <div class="stop-tip">The horses here are genuinely feral. Seeing a herd on the badlands ridge in morning mist is one of those travel memories you keep for years.</div>
+      <div class="badges"><span class="badge badge-early">Early start recommended</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">08:30</div></div><div class="content-col">
+      <div class="stop-title">Breakfast in Medora + visitor center</div>
+      <div class="stop-note">Ask rangers which areas had the most wildlife that morning — they track sightings daily and will point you in the right direction.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/thro/planyourvisit/wind-canyon-trail.htm" target="_blank">Wind Canyon Trail</a> <a class="gmaps" href="https://maps.google.com/?q=Wind+Canyon+Trail+Theodore+Roosevelt+NP" target="_blank">↗</a></div>
+      <div class="stop-note">0.4 km out-and-back. The Little Missouri River far below, canyon walls drop dramatically. View completely disproportionate to the effort required.</div>
+      <div class="badges"><span class="badge badge-dur">~45 min</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">10:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/thro/planyourvisit/south-unit-scenic-loop-road.htm" target="_blank">South Unit scenic loop</a> — 36 miles <a class="gmaps" href="https://maps.google.com/?q=Scenic+Loop+Drive+Theodore+Roosevelt+NP+South+Unit" target="_blank">↗</a></div>
+      <div class="stop-note">Key stops: Skyline Vista, Boicourt Overlook, Buck Hill (highest point, panoramic views), prairie dog town along the main road (~20 min). Bison herds can halt traffic 20 min at a time.</div>
+      <div class="badges"><span class="badge badge-dur">~2h30</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">13:00</div></div><div class="content-col">
+      <div class="stop-title">Lunch in Medora + rest</div>
+      <div class="badges"><span class="badge badge-dur">~1h30</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">14:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/thro/planyourvisit/coal-vein-trail.htm" target="_blank">Coal Vein Trail</a> <a class="gmaps" href="https://maps.google.com/?q=Coal+Vein+Trail+Theodore+Roosevelt+NP" target="_blank">↗</a></div>
+      <div class="stop-note">A coal seam burned underground for decades, baking rock into vivid red and orange scoria. Unlike anything in SD. 1.6 km loop, easy.</div>
+      <div class="badges"><span class="badge badge-dur">~1h30</span></div>
+      <button class="options-toggle" onclick="toggleOptions(this)">⊕ More trail options</button>
+      <div class="options-panel">
+        <div class="option-item"><div class="option-name"><a href="https://www.nps.gov/thro/planyourvisit/ridgeline-nature-trail.htm" target="_blank">Ridgeline Nature Trail</a></div><div class="option-desc">Easy 1.5 km loop with great badlands overview. Excellent photography.</div></div>
+        <div class="option-item"><div class="option-name"><a href="https://www.nps.gov/thro/planyourvisit/north-unit.htm" target="_blank">North Unit</a> — full detour</div><div class="option-desc">1.5 hrs from Medora. Dramatically different canyon landscape. Would require sacrificing the Coal Vein afternoon — but genuinely worth it if you want to see both park units.</div></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">16:30</div></div><div class="content-col">
+      <div class="stop-title">Second wildlife drive — late afternoon</div>
+      <div class="stop-note">Animals move again as heat drops. Completely different light than morning. Horses and bison most likely near the river flats.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-food"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Medora last night</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurant_Review-g45376-d471649-Reviews-Boots_Bar_Grill-Medora_North_Dakota.html" target="_blank">Boots Bar &amp; Grill</a> <a class="gmaps" href="https://maps.google.com/?q=Boots+Bar+and+Grill+Medora+ND" target="_blank">↗</a></div>
+        <div class="food-desc">The local bar. Great burgers — the elk burger in particular. Authentic western atmosphere with locals mixed in with tourists. Good place to end the day with a beer after a long time in the field.</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 5 ═══ -->
+<div class="day-content" id="day-5">
+  <div class="day-number">Day 6 · Thursday May 28</div>
+  <div class="day-heading">Medora → Hill City, SD</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Drive</span><span class="sum-val">~6h40 real</span></div>
+    <div class="sum-item"><span class="sum-label">Depart</span><span class="sum-val">09:00</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive</span><span class="sum-val">~15:40</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Hill City, SD</span></div>
+  </div>
+  <div class="day-math">GPS 4h30 × 1.25 = 5h40 + Belle Fourche lunch 1h = ~6h40. Depart 09:00 → arrive ~15:40</div>
+  <div class="map-wrap" id="map-5"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Route — Hwy 85 South then Hwy 385 into the Black Hills</div>
+    <div class="scenic-text">The return south on Hwy 85 has different light than the outbound drive — worth noticing. The moment you enter the Black Hills south of Belle Fourche is one of the great highway transitions: the flat Plains suddenly give way to dense ponderosa pine forest and granite outcrops, the road starts climbing and curving, and the temperature drops a few degrees. Highway 385 south through the Hills to Hill City is a beautiful mountain road — narrow, forested, with occasional granite formations visible through the trees.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Medora south on Highway 85</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-photo"></div><div class="time-label">~10:30</div></div><div class="content-col">
+      <div class="photo-block">
+        <div class="photo-label">📷 Optional detour — Enchanted Highway, ND</div>
+        <div class="stop-title"><a href="https://www.enchantedhighway.net/" target="_blank">Enchanted Highway</a> <a class="gmaps" href="https://maps.google.com/?q=Enchanted+Highway+North+Dakota" target="_blank">↗</a></div>
+        <div class="stop-note">A 32-mile stretch of Hwy 21 west of Regent, ND (slight detour east) lined with massive scrap-metal sculptures by a single artist. The Tin Family stands 110 feet tall. Similar concept to Porter Sculpture Park but bigger and stranger. Adds 45 min if you take it.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-opt">Slight detour</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~13:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://en.wikipedia.org/wiki/Belle_Fourche,_South_Dakota" target="_blank">Belle Fourche, SD</a> — lunch <a class="gmaps" href="https://maps.google.com/?q=Belle+Fourche+SD" target="_blank">↗</a></div>
+      <div class="stop-note">Geographic center of the US — there's a marker. <a href="https://www.tristatemuseum.com/" target="_blank">Tri-State Museum</a> is free and covers Black Hills homestead history.</div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Belle Fourche</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurants-g54450-Belle_Fourche_South_Dakota.html" target="_blank">Bogey's Bar &amp; Grill or Lula's</a> <a class="gmaps" href="https://maps.google.com/?q=Restaurants+Belle+Fourche+SD" target="_blank">↗</a></div>
+        <div class="food-desc">Belle Fourche is a ranching town — the food reflects it. Good burgers and steaks, honest portions. Lula's gets strong local reviews for breakfast and lunch. Nothing fancy, but genuinely local.</div>
+      </div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~15:30</div></div><div class="content-col">
+      <div class="stop-title">Arrive <a href="https://www.hillcitysd.com/" target="_blank">Hill City</a> — check in <a class="gmaps" href="https://maps.google.com/?q=Hill+City+SD" target="_blank">↗</a></div>
+      <div class="stop-note">Best base for next three days. Central to Custer, Crazy Horse, Rushmore, and Deadwood. Small, pleasant main street.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~16:30</div></div><div class="content-col">
+      <div class="stop-title">Walk Hill City main street</div>
+      <div class="stop-note"><a href="https://www.1880train.com/" target="_blank">1880 Train</a> steam railroad depot is here — book a steam ride ($35, ~15:00, 2 hrs through the Hills) if preferred over Cathedral Spires hike on Friday.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-food"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Hill City dinner</div>
+        <div class="food-title"><a href="https://1885steakhouse.com/" target="_blank">1885 Steakhouse &amp; Saloon</a> <a class="gmaps" href="https://maps.google.com/?q=1885+Steakhouse+Hill+City+SD" target="_blank">↗</a></div>
+        <div class="food-desc">The best dinner option in Hill City. Historic saloon atmosphere, excellent elk and bison steaks — the elk tenderloin is the standout. Local and regional game on the menu, knowledgeable staff. Reserve ahead for weekends. Alternatively, <a href="https://www.prairieberrywinery.com/" target="_blank">Prairie Berry Winery</a> has a full lunch menu with a rotating wine list and gets excellent reviews for their chicken and avocado dishes.</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 6 ═══ -->
+<div class="day-content" id="day-6">
+  <div class="day-number">Day 7 · Friday May 29</div>
+  <div class="day-heading">Custer State Park</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">To park</span><span class="sum-val">12 miles / ~20 min</span></div>
+    <div class="sum-item"><span class="sum-label">Entry</span><span class="sum-val">$20 — NOT covered by ATB</span></div>
+    <div class="sum-item"><span class="sum-label">Pay at</span><span class="sum-val">Entrance gate</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Hill City, SD</span></div>
+  </div>
+  <div class="map-wrap" id="map-6"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Scenic drives inside Custer — three classics</div>
+    <div class="scenic-text"><strong>Wildlife Loop Road</strong> (18 miles, open grassland) — the bison and wildlife drive. <strong>Needles Highway</strong> (14 miles, narrow mountain road) — granite spires and tunnels barely wide enough for a car. <strong>Iron Mountain Road</strong> (17 miles, back to Hill City) — pigtail bridges that spiral up the hillside, and three tunnels that perfectly frame Mount Rushmore in the distance. All three are slow drives by design — 10–15 mph in sections. Together they represent some of the most creative road engineering in the US.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-early"></div><div class="time-label">06:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://gfp.sd.gov/parks/detail/custer-state-park/" target="_blank">Wildlife Loop Road at dawn</a> <a class="gmaps" href="https://maps.google.com/?q=Wildlife+Loop+Road+Custer+State+Park" target="_blank">↗</a></div>
+      <div class="stop-note">From Hill City: Hwy 385 south ~10 min to Hwy 16A, east entrance. Ask at gate where wildlife was spotted. 18 miles — budget 2h30–3 hrs, not 45 min. Bison can stop traffic 10–20 min. Burros walk up to open windows.</div>
+      <div class="stop-tip">1,300+ free-roaming bison. Pronghorn, bighorn sheep, prairie dogs throughout. Do not rush this.</div>
+      <div class="badges"><span class="badge badge-early">Early start recommended</span><span class="badge badge-dur">2h30–3 hrs</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">10:00</div></div><div class="content-col">
+      <div class="stop-title">Visitor center — <em>Spirit of the Tatanka</em> film <a class="gmaps" href="https://maps.google.com/?q=Custer+State+Park+Visitor+Center" target="_blank">↗</a></div>
+      <div class="stop-note">20-min film narrated by Kevin Costner on bison and Lakota culture. Directly relevant to your <em>Dances with Wolves</em> interest. Opens 8am.</div>
+      <div class="badges"><span class="badge badge-dur">~20 min</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">10:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.custerresorts.com/activities/scenic-drives/needles-highway/" target="_blank">Needles Highway</a> to <a href="https://www.custerresorts.com/lodges/sylvan-lake-lodge/" target="_blank">Sylvan Lake</a> — 14 miles <a class="gmaps" href="https://maps.google.com/?q=Needles+Highway+South+Dakota" target="_blank">↗</a></div>
+      <div class="stop-note">Narrow road through granite spires, rock tunnels barely wide enough for one car. Needle's Eye tunnel is the highlight — the granite walls brush both sides. Drive slowly.</div>
+      <div class="badges"><span class="badge badge-dur">~45 min driving</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">11:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.alltrails.com/trail/us/south-dakota/sylvan-lake-shore-trail" target="_blank">Sylvan Lake</a> — swim + shoreline trail <a class="gmaps" href="https://maps.google.com/?q=Sylvan+Lake+Custer+State+Park" target="_blank">↗</a></div>
+      <div class="stop-note">Granite boulders rise from the lake. Cold water, swimmable in late May. 1.8 km shoreline loop. The Black Hills at their most cinematic.</div>
+      <div class="badges"><span class="badge badge-dur">~1h30</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">13:00</div></div><div class="content-col">
+      <div class="stop-title">Lunch at Sylvan Lake Lodge</div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">14:15</div></div><div class="content-col">
+      <div class="stop-title">Afternoon activity — choose one:</div>
+      <button class="options-toggle" onclick="toggleOptions(this)">⊕ 4 options</button>
+      <div class="options-panel">
+        <div class="option-item">
+          <div class="option-name"><a href="https://www.custerresorts.com/activities/activities-experiences/buffalo-safari-jeep-tour" target="_blank">Buffalo Safari Jeep Tour</a> <a class="gmaps" href="https://maps.google.com/?q=Custer+State+Park+Blue+Bell+Lodge" target="_blank">↗</a></div>
+          <div class="option-desc">Guided off-road jeep tour through private interior trails inside the Wildlife Loop — exclusive access not open to regular vehicles. Expert guides take you close to bison, pronghorn, and bighorn sheep. Ranked one of the top 10 safaris in the US. Book in advance through Custer Resorts. Departs from Blue Bell Lodge. ~2 hrs.</div>
+        </div>
+        <div class="option-item">
+          <div class="option-name"><a href="https://www.alltrails.com/trail/us/south-dakota/cathedral-spires-trail" target="_blank">Cathedral Spires Trail</a></div>
+          <div class="option-desc">3.2 km round trip, moderate. Granite towers above the treeline. Not crowded. ~2 hrs.</div>
+        </div>
+        <div class="option-item">
+          <div class="option-name"><a href="https://www.nps.gov/moru/planyourvisit/iron-mountain-road.htm" target="_blank">Iron Mountain Road back to Hill City</a></div>
+          <div class="option-desc">17 miles with pigtail bridges and tunnels framing Rushmore. Drive before tomorrow's Rushmore visit so you arrive knowing the approach. ~45 min.</div>
+        </div>
+        <div class="option-item">
+          <div class="option-name"><a href="https://www.1880train.com/" target="_blank">1880 Train steam ride</a></div>
+          <div class="option-desc">Departs Hill City ~15:00, 2 hrs. $35. Good if you're tired of hiking and want a relaxed afternoon.</div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~17:00</div></div><div class="content-col">
+      <div class="stop-title">Return to Hill City</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-food"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Hill City dinner</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurant_Review-g54645-d4960847-Reviews-Lemongrass_Bar_Kitchen-Hill_City_South_Dakota.html" target="_blank">Lemongrass Bar &amp; Kitchen</a> <a class="gmaps" href="https://maps.google.com/?q=Lemongrass+Bar+Kitchen+Hill+City+SD" target="_blank">↗</a></div>
+        <div class="food-desc">Surprising Asian-influenced menu in the middle of the Black Hills — consistently one of Hill City's best reviewed restaurants. Eclectic cocktails, fresh ingredients, warm atmosphere. A genuine contrast to the steak-heavy surroundings.</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 7 ═══ -->
+<div class="day-content" id="day-7">
+  <div class="day-number">Day 8 · Saturday May 30</div>
+  <div class="day-heading">Crazy Horse + Rushmore + Deadwood</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Crazy Horse</span><span class="sum-val">17 min from Hill City</span></div>
+    <div class="sum-item"><span class="sum-label">Rushmore</span><span class="sum-val">20 min from Crazy Horse</span></div>
+    <div class="sum-item"><span class="sum-label">Deadwood</span><span class="sum-val">35 min from Rushmore</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Hill City, SD</span></div>
+  </div>
+  <div class="map-wrap" id="map-7"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Route — Hwy 385 N, then Hwy 244 to Rushmore, then Hwy 385 N to Deadwood</div>
+    <div class="scenic-text">The drive from Hill City to Crazy Horse and Rushmore passes through dense ponderosa pine forest with granite outcrops. The approach to Rushmore via Iron Mountain Road (Hwy 16A, worth taking if you didn't yesterday) has tunnels that deliberately frame the four presidents — the NPS designed it that way. The drive from Rushmore to Deadwood through Lead and Central City goes through old mining territory — the terrain becomes more dramatic and the towns more atmospheric as you climb north through the Hills.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://crazyhorsememorial.org/" target="_blank">Crazy Horse Memorial</a> <a class="gmaps" href="https://maps.google.com/?q=Crazy+Horse+Memorial+South+Dakota" target="_blank">↗</a></div>
+      <div class="stop-note">Opens 9am. Start with the bus to the base ($5 extra, ~10 min wait). The face is 87 feet high. 3 museums and orientation film. Not federally funded — built by private donations since 1948, still unfinished after 75 years. That story is more moving than the carving itself.</div>
+      <div class="badges"><span class="badge badge-fee">$15 + $5 bus</span><span class="badge badge-dur">~2 hrs</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">11:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/moru/index.htm" target="_blank">Mount Rushmore</a> <a class="gmaps" href="https://maps.google.com/?q=Mount+Rushmore+National+Memorial" target="_blank">↗</a></div>
+      <div class="stop-note">No entry fee — $10 parking only. ATB pass does NOT cover parking. Avenue of Flags, Grand View Terrace, <a href="https://www.nps.gov/moru/planyourvisit/presidential-trail.htm" target="_blank">Presidential Trail</a> (0.6 miles). Visitor center film: 20 min, worth it.</div>
+      <div class="badges"><span class="badge badge-fee">$10 parking only</span><span class="badge badge-dur">~1h30</span></div>
+      <div class="opt-block" style="margin-top:5px">
+        <div class="opt-label">Optional — return for evening lighting ceremony</div>
+        <div class="stop-note">Rushmore is illuminated nightly until ~11pm in summer. The lighting ceremony with film and flag ceremony is a completely different atmosphere from daytime.</div>
+        <div class="badges"><span class="badge badge-opt">Optional return</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">13:00</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.deadwood.com/" target="_blank">Deadwood</a> — lunch <a class="gmaps" href="https://maps.google.com/?q=Deadwood+SD" target="_blank">↗</a></div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Deadwood lunch</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurant_Review-g54578-d11808196-Reviews-Deadwood_Social_Club-Deadwood_South_Dakota.html" target="_blank">Deadwood Social Club</a> <a class="gmaps" href="https://maps.google.com/?q=Deadwood+Social+Club+Deadwood+SD" target="_blank">↗</a></div>
+        <div class="food-desc">Upstairs from Saloon No. 10. Italian-accented American cuisine in a polished wood-panelled room that feels like an elegant brothel (historically appropriate). Wild game, prime steaks, fried buffalo sausage ravioli. One of the best restaurants in the entire Black Hills region. Alternatively, <a href="https://www.tripadvisor.com/Restaurant_Review-g54578-d781898-Reviews-Sugar_Shack-Deadwood_South_Dakota.html" target="_blank">Sugar Shack</a> on Hwy 385 for the best burger in the Black Hills, according to locals.</div>
+      </div>
+      <div class="badges"><span class="badge badge-dur">~1 hr lunch</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">14:30</div></div><div class="content-col">
+      <div class="stop-title">Deadwood attractions — choose your mix:</div>
+      <button class="options-toggle" onclick="toggleOptions(this)">⊕ 4 options for the afternoon</button>
+      <div class="options-panel">
+        <div class="option-item"><div class="option-name"><a href="https://www.adamsmuseumandhouse.org/" target="_blank">Adams Museum</a> <a class="gmaps" href="https://maps.google.com/?q=Adams+Museum+Deadwood+SD" target="_blank">↗</a></div><div class="option-desc">Free. Wild Bill Hickok's revolver, gold rush artifacts, a two-headed calf. Deadwood's oldest history museum. ~45 min.</div></div>
+        <div class="option-item"><div class="option-name"><a href="https://www.cityofdeadwood.com/254/Mount-Moriah-Cemetery" target="_blank">Mount Moriah Cemetery</a> <a class="gmaps" href="https://maps.google.com/?q=Mount+Moriah+Cemetery+Deadwood" target="_blank">↗</a></div><div class="option-desc">~$1. Wild Bill and Calamity Jane buried here. Panoramic views over Deadwood. 5 min walk uphill from Main Street. ~40 min.</div></div>
+        <div class="option-item"><div class="option-name"><a href="https://www.saloon10.com/" target="_blank">Saloon No. 10</a> + Main Street <a class="gmaps" href="https://maps.google.com/?q=Saloon+Number+10+Deadwood+SD" target="_blank">↗</a></div><div class="option-desc">Wild Bill was shot here in 1876. Shootout reenactments daily at set times. 150+ whiskeys on the bar. The street is the genuine 1876 layout.</div></div>
+        <div class="option-item"><div class="option-name"><a href="https://www.daysof76museum.com/" target="_blank">Days of '76 Museum</a></div><div class="option-desc">Exceptional collection of 19th-century stagecoaches, wagons, and rodeo history. One of the best western history museums in the region. ~1 hr.</div></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">17:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.tatankastory.com/" target="_blank">Tatanka: Story of the Bison</a> <a class="gmaps" href="https://maps.google.com/?q=Tatanka+Story+of+the+Bison+Deadwood+SD" target="_blank">↗</a></div>
+      <div class="stop-note">2 min drive from Deadwood. Outside: 14 life-size bronze bison stampeding, pursued by Lakota riders. Inside: film on bison near-extinction and Lakota culture.</div>
+      <div class="stop-tip">Given your <em>Dances with Wolves</em> connection, this may be the most resonant single stop on the entire trip.</div>
+      <div class="badges"><span class="badge badge-fee">~$10</span><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="stop-title">Dinner in Deadwood or drive back to Hill City (~35 min)</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 8 ═══ -->
+<div class="day-content" id="day-8">
+  <div class="day-number">Day 9 · Sunday May 31</div>
+  <div class="day-heading">Devil's Tower → Sioux Falls</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">To tower</span><span class="sum-val">~2h30 from Hill City</span></div>
+    <div class="sum-item"><span class="sum-label">Tower → SF</span><span class="sum-val">~7h30 with lunch</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive SF</span><span class="sum-val">~21:00</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Sioux Falls, SD</span></div>
+  </div>
+  <div class="day-math">Hill City → Tower: 2h25. Tower time: 2 hrs. Tower → Sioux Falls: 6h30 + lunch 1hr = 7h30. Depart 09:00 → ~21:00</div>
+  <div class="map-wrap" id="map-8"></div>
+
+  <div class="scenic-banner">
+    <div class="scenic-label">Route options — I-90 W then Hwy 14 / and optional Spearfish Canyon</div>
+    <div class="scenic-text">The direct route to Devil's Tower takes I-90 west to Spearfish, then Hwy 14 west into Wyoming — pleasant but unremarkable. The scenic option detours through <strong>Spearfish Canyon</strong> (Hwy 14A south off I-90) before rejoining west — a 20-mile limestone canyon with waterfalls and old-growth forest, genuinely beautiful, adds ~45 min. The drive back east on I-90 across South Dakota in late afternoon is a completely different experience from the morning drive outbound — the light comes from behind now, and the Missouri River crossing at Chamberlain looks different in evening gold.</div>
+  </div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Hill City — I-90 west toward Spearfish</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-opt"></div><div class="time-label">~09:45</div></div><div class="content-col">
+      <div class="opt-block">
+        <div class="opt-label">Optional detour — adds ~45 min</div>
+        <div class="stop-title"><a href="https://www.spearfishcanyon.com/" target="_blank">Spearfish Canyon</a> <a class="gmaps" href="https://maps.google.com/?q=Spearfish+Canyon+South+Dakota" target="_blank">↗</a></div>
+        <div class="stop-note">Take Hwy 14A south off I-90. Dramatic 20-mile limestone canyon, <a href="https://www.alltrails.com/trail/us/south-dakota/bridal-veil-falls-trail--2" target="_blank">Bridal Veil Falls</a> is a 5-min roadside stop. Pushes Sioux Falls arrival to ~22:00 if you do this.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-opt">Optional</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-photo"></div><div class="time-label">~10:00</div></div><div class="content-col">
+      <div class="photo-block">
+        <div class="photo-label">📷 Quick stop — Sturgis, SD</div>
+        <div class="stop-title"><a href="https://www.sturgis.com/" target="_blank">Sturgis main street</a> <a class="gmaps" href="https://maps.google.com/?q=Sturgis+SD" target="_blank">↗</a></div>
+        <div class="stop-note">Famous for the world's largest motorcycle rally (August). In late May it's a normal small town but the biker mythology is everywhere. Leather shops, rally memorabilia, bars. A quick walk gives a feel for the culture.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-dur">15–20 min</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~11:30</div></div><div class="content-col">
+      <div class="stop-title"><a href="https://www.nps.gov/deto/index.htm" target="_blank">Devil's Tower National Monument, WY</a> <a class="gmaps" href="https://maps.google.com/?q=Devils+Tower+National+Monument+Wyoming" target="_blank">↗</a></div>
+      <div class="stop-note"><a href="https://www.nps.gov/deto/planyourvisit/tower-trail.htm" target="_blank">Tower Trail</a>: 2.5 km loop around the base (~1h30). Scale only registers when standing directly under the columns. Climbers often visible. America's first National Monument, declared by Theodore Roosevelt in 1906.</div>
+      <div class="stop-tip">Photos genuinely do not prepare you for the scale. Much larger than it appears on approach.</div>
+      <div class="badges"><span class="badge badge-free">ATB pass covers it</span><span class="badge badge-dur">~2 hrs</span></div>
+      <button class="options-toggle" onclick="toggleOptions(this)">⊕ More at Devil's Tower</button>
+      <div class="options-panel">
+        <div class="option-item"><div class="option-name"><a href="https://www.nps.gov/deto/planyourvisit/red-beds-trail.htm" target="_blank">Red Beds Trail</a></div><div class="option-desc">4.8 km loop through the surrounding landscape with Belle Fourche River views. More solitary than Tower Trail. ~1.5 hrs.</div></div>
+        <div class="option-item"><div class="option-name">Climbers watching</div><div class="option-desc">Devil's Tower is one of the most famous rock climbing destinations in the US. Ask rangers where to see the climbers best from the base — the column cracks are the standard routes.</div></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~13:30</div></div><div class="content-col">
+      <div class="stop-title">Leave Devil's Tower east on I-90</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~15:00</div></div><div class="content-col">
+      <div class="stop-title">Lunch — Spearfish or Sturgis</div>
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Spearfish, SD</div>
+        <div class="food-title"><a href="https://www.tripadvisor.com/Restaurant_Review-g56003-d1581836-Reviews-Spearfish_Canyon_Lodge-Spearfish_South_Dakota.html" target="_blank">Spearfish Canyon Lodge Restaurant</a> <a class="gmaps" href="https://maps.google.com/?q=Spearfish+Canyon+Lodge+Restaurant" target="_blank">↗</a></div>
+        <div class="food-desc">Fine dining in a gorgeous canyon setting. Worth the detour into the canyon for a proper lunch — waterfall view from the dining room, local game and trout on the menu. The location alone is worth it.</div>
+      </div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-photo"></div><div class="time-label">~17:30</div></div><div class="content-col">
+      <div class="photo-block">
+        <div class="photo-label">📷 Landscape — Missouri River eastbound</div>
+        <div class="stop-title">Missouri River at Chamberlain — going east <a class="gmaps" href="https://maps.google.com/?q=Dignity+Sculpture+Chamberlain+SD" target="_blank">↗</a></div>
+        <div class="stop-note">The river crossing looks completely different in late afternoon light heading east. Evening gold on the water and bluffs. The Dignity sculpture is visible from the highway in both directions.</div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~21:00</div></div><div class="content-col">
+      <div class="stop-title">Arrive Sioux Falls. Check in. Late dinner nearby.</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 9 ═══ -->
+<div class="day-content" id="day-9">
+  <div class="day-number">Day 10 · Monday June 1</div>
+  <div class="day-heading">Sioux Falls → Des Moines</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Drive</span><span class="sum-val">~6h20 real</span></div>
+    <div class="sum-item"><span class="sum-label">Depart</span><span class="sum-val">09:00</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive</span><span class="sum-val">~15:20</span></div>
+    <div class="sum-item"><span class="sum-label">Overnight</span><span class="sum-val">Des Moines, IA</span></div>
+  </div>
+  <div class="day-math">GPS 4h15 × 1.25 = 5h20 + lunch 1h = ~6h20. Depart 09:00 → arrive ~15:20</div>
+  <div class="map-wrap" id="map-9"></div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Sioux Falls — I-90 E then I-35 S</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-opt"></div><div class="time-label">~09:30</div></div><div class="content-col">
+      <div class="opt-block">
+        <div class="opt-label">Optional — if you missed it outbound</div>
+        <div class="stop-title"><a href="https://www.siouxfalls.org/parks/falls-park" target="_blank">Falls Park, Sioux Falls</a> <a class="gmaps" href="https://maps.google.com/?q=Falls+Park+Sioux+Falls+SD" target="_blank">↗</a></div>
+        <div class="stop-note">Still worth it — the pink quartzite falls in morning light are excellent.</div>
+        <div class="badges"><span class="badge badge-free">Free</span><span class="badge badge-opt">Optional</span></div>
+      </div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~12:00</div></div><div class="content-col">
+      <div class="stop-title">Lunch stop — Iowa City or Ames</div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~15:20</div></div><div class="content-col">
+      <div class="stop-title">Arrive Des Moines. Check in.</div>
+      <div class="stop-note">Same East Village area as Night 1. Last night on the road.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-food"></div><div class="time-label">19:30</div></div><div class="content-col">
+      <div class="food-block">
+        <div class="food-label">Local restaurant — Des Moines last night</div>
+        <div class="food-title"><a href="https://harbingerdsm.com/" target="_blank">Harbinger</a> or <a href="https://www.eateryadsm.com/" target="_blank">Eatery A</a> <a class="gmaps" href="https://maps.google.com/?q=Harbinger+Des+Moines" target="_blank">↗</a></div>
+        <div class="food-desc">Harbinger is small and seasonal — the best in Des Moines, reserve well ahead. Eatery A is easier to get into and serves excellent Mediterranean-inspired dishes with local Iowa produce. Either makes a worthy final dinner.</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══ DAY 10 ═══ -->
+<div class="day-content" id="day-10">
+  <div class="day-number">Day 11 · Tuesday June 2</div>
+  <div class="day-heading">Des Moines → Home</div>
+  <div class="summary-bar">
+    <div class="sum-item"><span class="sum-label">Drive</span><span class="sum-val">~7h25 real</span></div>
+    <div class="sum-item"><span class="sum-label">Depart</span><span class="sum-val">09:00</span></div>
+    <div class="sum-item"><span class="sum-label">Arrive</span><span class="sum-val">~16:30</span></div>
+    <div class="sum-item"><span class="sum-label">End</span><span class="sum-val">Champaign, IL</span></div>
+  </div>
+  <div class="day-math">GPS 5h07 × 1.25 = 6h25 + lunch 1h = ~7h25. Depart 09:00 → home ~16:30</div>
+  <div class="map-wrap" id="map-10"></div>
+
+  <div class="stops-list">
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">09:00</div></div><div class="content-col">
+      <div class="stop-title">Leave Des Moines — I-80 east</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~12:00</div></div><div class="content-col">
+      <div class="stop-title">Lunch — Iowa City or Davenport</div>
+      <div class="badges"><span class="badge badge-dur">~1 hr</span></div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~14:00</div></div><div class="content-col">
+      <div class="stop-title">Cross back into Illinois — Mississippi River at Davenport <a class="gmaps" href="https://maps.google.com/?q=Davenport+Iowa+Mississippi+River" target="_blank">↗</a></div>
+      <div class="stop-note">The Mississippi crossing at Davenport/Rock Island is the last scenic moment of the trip. Wide river, bridge views, industrial riverfront. Pull off briefly if you want to mark the return.</div>
+    </div></div>
+
+    <div class="stop-item"><div class="time-col"><div class="time-dot dot-main"></div><div class="time-label">~16:30</div></div><div class="content-col">
+      <div class="stop-title">Home in Champaign <a class="gmaps" href="https://maps.google.com/?q=Champaign,IL" target="_blank">↗</a></div>
+      <div class="stop-note">2,600 miles. 5 states. 12 days.</div>
+    </div></div>
+  </div>
+
+  <div class="notes-box">
+    <div class="notes-label">Booking checklist</div>
+    <a href="https://www.cedarpasslodge.com/" target="_blank">Cedar Pass Lodge</a> (Badlands) · <a href="https://www.medora.com/lodging/" target="_blank">Medora lodging</a> · Hill City motel · <a href="https://harbingerdsm.com/" target="_blank">Harbinger Des Moines</a> (reserve ahead) · <a href="https://www.custerresorts.com/activities/activities-experiences/buffalo-safari-jeep-tour" target="_blank">Buffalo Safari Jeep Tour</a> (Custer)<br>
+    Minuteman Delta-01 underground tour: <a href="https://www.recreation.gov/ticket/facility/300007" target="_blank">recreation.gov</a> — 6 people max, fills fast in summer
+  </div>
+  <div class="alert-box"><strong>America the Beautiful pass ($80)</strong> covers: Badlands NP · Theodore Roosevelt NP · Devil's Tower NM. Does NOT cover: Custer State Park ($20 separate) or Mount Rushmore parking ($10).</div>
+</div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+const DAY_MAPS = [
+  [41.2,-91.5,6,[[40.1164,-88.2434,'Champaign, IL','https://maps.google.com/?q=Champaign,IL'],[41.66,-91.53,'Iowa City, IA','https://maps.google.com/?q=Iowa+City,IA'],[41.587,-93.625,'Des Moines, IA','https://maps.google.com/?q=Des+Moines,IA']]],
+  [43.5,-99.0,6,[[41.587,-93.625,'Des Moines, IA','https://maps.google.com/?q=Des+Moines,IA'],[43.545,-96.731,'Sioux Falls — Falls Park','https://maps.google.com/?q=Falls+Park+Sioux+Falls+SD'],[43.72,-97.02,'Porter Sculpture Park','https://maps.google.com/?q=Porter+Sculpture+Park+Montrose+SD'],[43.71,-98.03,'Mitchell — Corn Palace','https://maps.google.com/?q=Corn+Palace+Mitchell+SD'],[43.785,-99.303,'Al\'s Oasis / Missouri River','https://maps.google.com/?q=Als+Oasis+Oacoma+SD'],[43.993,-102.07,'Wall, SD','https://maps.google.com/?q=Wall+Drug+Wall+SD']]],
+  [43.78,-102.35,10,[[43.875,-102.337,'Ben Reifel Visitor Center','https://maps.google.com/?q=Ben+Reifel+Visitor+Center+Badlands'],[43.884,-102.178,'Notch Trail','https://maps.google.com/?q=Notch+Trail+Badlands+National+Park'],[43.877,-102.141,'Door & Window Trails','https://maps.google.com/?q=Door+Trail+Badlands+National+Park'],[43.904,-102.038,'Minuteman Missile Site','https://maps.google.com/?q=Minuteman+Missile+National+Historic+Site'],[43.91,-102.58,'Pinnacles Overlook','https://maps.google.com/?q=Pinnacles+Overlook+Badlands+National+Park'],[43.78,-102.71,'Sage Creek Rim Road','https://maps.google.com/?q=Sage+Creek+Campground+Badlands']]],
+  [45.5,-102.8,6,[[43.993,-102.07,'Wall, SD','https://maps.google.com/?q=Wall+SD'],[46.244,-103.388,'Bowman, ND','https://maps.google.com/?q=Bowman+ND'],[46.914,-103.538,'Medora, ND','https://maps.google.com/?q=Medora+ND'],[46.879,-103.372,'Painted Canyon Overlook','https://maps.google.com/?q=Painted+Canyon+Overlook+Theodore+Roosevelt+NP'],[46.921,-103.545,'Château de Morès','https://maps.google.com/?q=Chateau+de+Mores+Medora+ND']]],
+  [46.92,-103.5,11,[[46.914,-103.538,'Medora / South Unit','https://maps.google.com/?q=Theodore+Roosevelt+National+Park+South+Unit'],[46.856,-103.617,'Wind Canyon Trail','https://maps.google.com/?q=Wind+Canyon+Trail+Theodore+Roosevelt+NP'],[46.953,-103.455,'Buck Hill','https://maps.google.com/?q=Buck+Hill+Theodore+Roosevelt+NP'],[46.873,-103.668,'Coal Vein Trail','https://maps.google.com/?q=Coal+Vein+Trail+Theodore+Roosevelt+NP'],[46.879,-103.372,'Painted Canyon','https://maps.google.com/?q=Painted+Canyon+Overlook+Theodore+Roosevelt+NP']]],
+  [45.5,-103.0,6,[[46.914,-103.538,'Medora, ND','https://maps.google.com/?q=Medora+ND'],[44.672,-103.852,'Belle Fourche, SD','https://maps.google.com/?q=Belle+Fourche+SD'],[43.933,-103.578,'Hill City, SD','https://maps.google.com/?q=Hill+City+SD']]],
+  [43.82,-103.55,11,[[43.933,-103.578,'Hill City','https://maps.google.com/?q=Hill+City+SD'],[43.764,-103.404,'Wildlife Loop Road','https://maps.google.com/?q=Wildlife+Loop+Road+Custer+State+Park'],[43.741,-103.542,"Needles Highway",'https://maps.google.com/?q=Needles+Highway+South+Dakota'],[43.783,-103.565,'Sylvan Lake','https://maps.google.com/?q=Sylvan+Lake+Custer+State+Park'],[43.774,-103.552,'Cathedral Spires Trail','https://maps.google.com/?q=Cathedral+Spires+Trail+Custer+State+Park'],[43.739,-103.456,'Blue Bell Lodge (Jeep Tours)','https://maps.google.com/?q=Blue+Bell+Lodge+Custer+State+Park'],[43.854,-103.466,'Iron Mountain Road','https://maps.google.com/?q=Iron+Mountain+Road+South+Dakota']]],
+  [43.97,-103.6,10,[[43.933,-103.578,'Hill City','https://maps.google.com/?q=Hill+City+SD'],[43.837,-103.624,'Crazy Horse Memorial','https://maps.google.com/?q=Crazy+Horse+Memorial+South+Dakota'],[43.879,-103.459,'Mount Rushmore','https://maps.google.com/?q=Mount+Rushmore+National+Memorial'],[44.376,-103.729,'Deadwood','https://maps.google.com/?q=Deadwood+SD'],[44.389,-103.745,'Adams Museum','https://maps.google.com/?q=Adams+Museum+Deadwood+SD'],[44.393,-103.754,'Tatanka: Story of the Bison','https://maps.google.com/?q=Tatanka+Story+of+the+Bison+Deadwood+SD']]],
+  [44.5,-101.0,6,[[43.933,-103.578,'Hill City','https://maps.google.com/?q=Hill+City+SD'],[44.590,-104.714,"Devil's Tower NM",'https://maps.google.com/?q=Devils+Tower+National+Monument+Wyoming'],[44.506,-103.864,'Spearfish Canyon (optional)','https://maps.google.com/?q=Spearfish+Canyon+South+Dakota'],[44.482,-103.869,'Sturgis','https://maps.google.com/?q=Sturgis+SD'],[43.545,-96.731,'Sioux Falls','https://maps.google.com/?q=Sioux+Falls+SD']]],
+  [42.5,-95.5,6,[[43.545,-96.731,'Sioux Falls, SD','https://maps.google.com/?q=Sioux+Falls+SD'],[41.66,-91.53,'Iowa City, IA','https://maps.google.com/?q=Iowa+City+IA'],[41.587,-93.625,'Des Moines, IA','https://maps.google.com/?q=Des+Moines+IA']]],
+  [41.2,-91.5,6,[[41.587,-93.625,'Des Moines, IA','https://maps.google.com/?q=Des+Moines+IA'],[41.66,-91.53,'Iowa City, IA','https://maps.google.com/?q=Iowa+City+IA'],[40.1164,-88.2434,'Champaign, IL','https://maps.google.com/?q=Champaign+IL']]]
+];
+
+const maps={};
+const rustIcon=L.divIcon({className:'',html:'<div style="width:10px;height:10px;border-radius:50%;background:#c4622d;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35)"></div>',iconSize:[10,10],iconAnchor:[5,5]});
+
+function initMap(idx){
+  if(maps[idx]){setTimeout(()=>maps[idx].invalidateSize(),50);return;}
+  const d=DAY_MAPS[idx];
+  const m=L.map('map-'+idx).setView([d[0],d[1]],d[2]);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:18}).addTo(m);
+  const pts=d[3].map(s=>[s[0],s[1]]);
+  if(pts.length>1)L.polyline(pts,{color:'#c4622d',weight:2,opacity:0.5,dashArray:'6,5'}).addTo(m);
+  d[3].forEach(s=>{
+    L.marker([s[0],s[1]],{icon:rustIcon}).addTo(m).bindPopup('<strong>'+s[2]+'</strong>'+(s[3]?'<br><a href="'+s[3]+'" target="_blank">Open in Maps ↗</a>':''));
+  });
+  maps[idx]=m;
+  setTimeout(()=>m.invalidateSize(),150);
+}
+
+function showDay(idx){
+  document.querySelectorAll('.day-content').forEach(d=>d.classList.remove('visible'));
+  document.querySelectorAll('.day-item').forEach(d=>d.classList.remove('active'));
+  document.getElementById('day-'+idx).classList.add('visible');
+  document.querySelector('[data-day="'+idx+'"]').classList.add('active');
+  document.getElementById('main').scrollTop=0;
+  initMap(idx);
+}
+
+function toggleOptions(btn){
+  const panel=btn.nextElementSibling;
+  const open=panel.classList.toggle('open');
+  btn.textContent=open?btn.textContent.replace('⊕','⊖'):btn.textContent.replace('⊖','⊕');
+}
+
+window.addEventListener('load',()=>initMap(0));
+</script>
+</body>
+</html>
