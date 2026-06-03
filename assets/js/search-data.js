@@ -16,13 +16,6 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/publications/";
           },
-        },{id: "nav-projects",
-          title: "projects",
-          description: "Some of the projects I developed or worked on.",
-          section: "Navigation",
-          handler: () => {
-            window.location.href = "/projects/";
-          },
         },{id: "nav-cv",
           title: "cv",
           description: "",
@@ -30,12 +23,12 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "nav-mentorship",
-          title: "mentorship",
+        },{id: "nav-encoding-culture-s-lab",
+          title: "Encoding Culture(s) Lab",
           description: "",
           section: "Navigation",
           handler: () => {
-            window.location.href = "/mentorship/";
+            window.location.href = "/https:/eclab.ischool.illinois.edu";
           },
         },{id: "news-just-published-on-the-journal-of-open-humanities-data-the-semantic-reference-data-modelling-method-creating-understandable-reusable-and-sustainable-semantic-data-models-available-in-open-access-here",
           title: 'Just published on the Journal of Open Humanities Data: The Semantic Reference Data...',
@@ -92,7 +85,7 @@ ninja.data = [{
         title: 'Work',
         section: 'Socials',
         handler: () => {
-          window.open("https://ischool.illinois.edu/people/nicola-carboni", "_blank");
+          window.open("https://eclab.ischool.illinois.edu", "_blank");
         },
       },{
         id: 'social-bluesky',
