@@ -3,7 +3,8 @@ layout: page
 permalink: /mentorship/
 title: mentorship
 description: 
-nav: true
+nav: false
+published: false 
 nav_order: 6
 ---
 
